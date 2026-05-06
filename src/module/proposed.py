@@ -23,6 +23,9 @@ class ProposedModel(nn.Module):
     
     - Args
         task_num:    Number of tasks, Default 6 (5 machinability factors + 1 auxiliary)
+                     The phase branch is used for auxilary/physics-guided learning,
+                     but is excluded from the final supervised loss.
+                     
         hidden_dim:  Hidden dimension of task-specific representations
         num_heads:   Number of heads in temporal multi-head attention
         temp_dim:    Inner dimension of temporal attention FFN
@@ -69,6 +72,11 @@ class ProposedModel(nn.Module):
         ])
         
         # Final prediction heads H_final(·)
+        # All task branches, including the auxiliary phase head, are instantiated 
+        # to maintain architectural uniformity and to simplify per-task parameter analysis.
+        # However, the final supervised loss is computed 
+        # only for the primary machinability tasks (Fx, Fy, Fz, VB, Ra), excluding phase.
+
         self.pred_nets = nn.ModuleList([
             FinalPredictionHead(in_ch=hidden_dim) for _ in range(task_num)
         ])
